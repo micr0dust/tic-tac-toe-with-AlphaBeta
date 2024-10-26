@@ -34,20 +34,16 @@ function checkWinLine(board) {
     return [];
 }
 
-function minimax(board, depth, isMaximizingPlayer, alpha, beta, team) {
+function minimax(board, isMe, alpha, beta, team) {
     const winline = checkWinLine(board);
-    if (winline.length > 0) {
-        return isMaximizingPlayer ? -1 : 1;
-    }
-    if (boardIsFull(board)) {
-        return 0;
-    }
+    if (winline.length > 0) return isMe ? -1 : 1;
+    if (boardIsFull(board)) return 0;
 
-    if (isMaximizingPlayer) {
+    if (isMe) {
         let bestScore = -Infinity;
         for (const move of getLegalMoves(board)) {
             board[move] = players[team%2];
-            const score = minimax(board, depth + 1, false, alpha, beta, team);
+            const score = minimax(board, false, alpha, beta, team);
             board[move] = ' ';
             bestScore = Math.max(score, bestScore);
             alpha = Math.max(alpha, bestScore);
@@ -56,20 +52,20 @@ function minimax(board, depth, isMaximizingPlayer, alpha, beta, team) {
             }
         }
         return bestScore;
-    } else {
-        let bestScore = Infinity;
-        for (const move of getLegalMoves(board)) {
-            board[move] = players[(team+1)%2];
-            const score = minimax(board, depth + 1, true, alpha, beta, team);
-            board[move] = ' ';
-            bestScore = Math.min(score, bestScore);
-            beta = Math.min(beta, bestScore);
-            if (beta <= alpha) {
-                break;
-            }
-        }
-        return bestScore;
     }
+
+    let bestScore = Infinity;
+    for (const move of getLegalMoves(board)) {
+        board[move] = players[(team+1)%2];
+        const score = minimax(board, true, alpha, beta, team);
+        board[move] = ' ';
+        bestScore = Math.min(score, bestScore);
+        beta = Math.min(beta, bestScore);
+        if (beta <= alpha) {
+            break;
+        }
+    }
+    return bestScore;
 }
 
 function randomMove() {
@@ -84,7 +80,7 @@ function AlphaBetaMove(team) {
     let bestMove = -1;
     for (const move of getLegalMoves(board)) {
         board[move] = role;
-        const score = minimax(board, 0, false, -Infinity, Infinity, team);
+        const score = minimax(board, false, -Infinity, Infinity, team);
         board[move] = ' ';
         if (score > bestScore) {
             bestScore = score;
@@ -104,10 +100,7 @@ function next(ele){
 
     if (legalMoves.length > 0) {
         const move = parseInt(id[3]);
-        if (positionOccupied(board, move)) {
-            console.log("Position occupied!");
-            return;
-        }
+        if (positionOccupied(board, move)) return;
         board[move] = players[++counter%2];
     } else {
         end();
@@ -134,24 +127,24 @@ function first(){
     printBoard(board);
 }
 
-function updateProgressBar(oCount, xCount, tieCount, label) {
+function updateProgressBar(counts, label) {
     // 計算總次數
-    const total = oCount + xCount + tieCount;
+    const total = counts[0] + counts[1] + counts[2];
   
     // 避免 total 為 0 時出現 NaN
-    const oPercent = total ? (oCount / total) * 100 : 0;
-    const xPercent = total ? (xCount / total) * 100 : 0;
-    const tiePercent = total ? (tieCount / total) * 100 : 0;
+    const oPercent = total ? (counts[0] / total) * 100 : 0;
+    const xPercent = total ? (counts[1] / total) * 100 : 0;
+    const tiePercent = total ? (counts[2] / total) * 100 : 0;
   
     // 更新進度條的寬度及文字
     document.getElementById('progress-o').style.width = `${oPercent}%`;
-    document.getElementById('progress-o').textContent = `(${label[0]}) O: ${oCount}`;
+    document.getElementById('progress-o').textContent = `O: ${counts[0]} (${label[0]})`;
   
     document.getElementById('progress-x').style.width = `${xPercent}%`;
-    document.getElementById('progress-x').textContent = `(${label[1]}) X: ${xCount}`;
+    document.getElementById('progress-x').textContent = `X: ${counts[1]} (${label[1]})`;
   
     document.getElementById('progress-tie').style.width = `${tiePercent}%`;
-    document.getElementById('progress-tie').textContent = `平手: ${tieCount}`;
+    document.getElementById('progress-tie').textContent = `平手: ${counts[2]}`;
 }
 
 function selfPlay(){
@@ -193,7 +186,7 @@ function selfPlay(){
                 }
             }
         }
-        updateProgressBar(win_rec[0], win_rec[1], win_rec[2], label);
+        updateProgressBar(win_rec, label);
         loader.classList.remove('is-active');
     }, 10);
 }
