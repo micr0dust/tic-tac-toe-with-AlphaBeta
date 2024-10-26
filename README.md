@@ -11,4 +11,4 @@
 
 - Press the button below to play righ now!
 
-[![前往網頁](https://github.com/wuilliam104286/image_saves/raw/master/img/button/btn-web-black-ch.png "前往網頁")](https://micr0dust.github.io/SuperTNT_story_mode/)
+[![前往網頁](https://github.com/wuilliam104286/image_saves/raw/master/img/button/btn-web-black-ch.png "前往網頁")](https://micr0dust.github.io/tic-tac-toe-with-AlphaBeta)
